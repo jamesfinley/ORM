@@ -161,32 +161,42 @@ class Model {
 		{
 			$db->where($this->base_filter());
 			
-			if ($where = value_for_key('where', $options))
+			if (count($options))
 			{
-				$db->where($where);
-			}
-			if ($limit = value_for_key('limit', $options))
-			{
-				$offset = value_for_key('offset', $options, 0);
-				
-				$db->limit($limit, $offset);
-			}
-			if ($order = value_for_key('order', $options))
-			{
-				$order = explode(' ', $order);
-				
-				if (count($order) == 2)
+				if (array_key_exists('where', $options) || array_key_exists('limit', $options) || array_key_exists('offset', $options) || array_key_exists('order', $options) || array_key_exists('select', $options))
 				{
-					$db->order($order[0], $order[1]);
+					if ($where = value_for_key('where', $options))
+					{
+						$db->where($where);
+					}
+					if ($limit = value_for_key('limit', $options))
+					{
+						$offset = value_for_key('offset', $options, 0);
+						
+						$db->limit($limit, $offset);
+					}
+					if ($order = value_for_key('order', $options))
+					{
+						$order = explode(' ', $order);
+						
+						if (count($order) == 2)
+						{
+							$db->order($order[0], $order[1]);
+						}
+						else
+						{
+							$db->order($order[0]);
+						}
+					}
+					if ($select = value_for_key('select', $options))
+					{
+						$db->select($select);
+					}
 				}
 				else
 				{
-					$db->order($order[0]);
+					$db->where($options);
 				}
-			}
-			if ($select = value_for_key('select', $options))
-			{
-				$db->select($select);
 			}
 			
 			$results = $this->process_results($db->get($this->table_name()));
