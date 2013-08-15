@@ -33,8 +33,10 @@ ORM provides a series of hooks to process data before and after events. Currentl
 ### Setup Models and Connect to Database
 
 ```php
+// Connect to Database
 DB::Instance('localhost', 'user', 'pass', 'cms');
 
+// Build Blog, Article, Author, and Comment models
 class Blog extends Model {
 	
 	function init()
@@ -64,7 +66,7 @@ class Author extends Model {
 	
 }
 
-class Comments extends Model { }
+class Comment extends Model { }
 ```
 
 ### Access Data
