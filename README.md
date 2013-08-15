@@ -74,9 +74,17 @@ class Comment extends Model { }
 Let's say we have a blog named "News" and we want to display a list of articles.
 
 ```php
-$blog = (new Blog())->find(array('name' => 'News'))[0];
+// Find blog named "News"
+$blog = (new Blog())->find(array(
+	'where' => array(
+		'name' => 'News'
+	)
+))[0];
+
+// Find all articles from blog
 $articles = $blog->articles->find();
 
+// Display articles
 foreach ($articles as $article)
 {
 	?>
