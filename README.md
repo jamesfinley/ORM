@@ -76,9 +76,7 @@ Let's say we have a blog named "News" and we want to display a list of articles.
 ```php
 // Find blog named "News"
 $blog = (new Blog())->find(array(
-	'where' => array(
-		'name' => 'News'
-	)
+	'name' => 'News'
 ))[0];
 
 // Find all articles from blog
