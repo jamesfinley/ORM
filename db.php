@@ -163,10 +163,10 @@ class DB {
 	{
 		if (count($this->join))
 		{
-			$joins = [];
+			$joins = array();
 			foreach ($this->join as $j)
 			{
-				$join = ($j['type'] != '' ? $j['type'] . ' ' : '') . $j['table_name'] . ' ON ' . $j['on'];
+				$join = ($j['type'] != '' ? $j['type'] . ' ' : '') . 'JOIN ' . $j['table_name'] . ' ON ' . $j['on'];
 				$joins[] = $join;
 			}
 			return ' '.implode(' ', $joins);
