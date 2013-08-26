@@ -1,3 +1,7 @@
+# Project Overview
+
+The ORM and DB classes here are built framework agnostic for PHP. Easily setup models with relationships for easy access of data, or just use the DB class for easily building and running queries.
+
 # ORM
 
 ## Naming Conventions
