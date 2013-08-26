@@ -4,6 +4,7 @@ class Model {
 	
 	private $associations;
 	private $table_name;
+	private $table_alias;
 	private $primary_key;
 	private $hooks;
 	
@@ -36,6 +37,25 @@ class Model {
 		}
 		
 		return $this->table_name;
+	}
+	
+	function table_alias($table_alias = null)
+	{
+		if ($table_alias)
+		{
+			$this->table_alias = $table_alias;
+		}
+		
+		return $this->table_alias;
+	}
+	
+	function get($justAlias = false)
+	{
+		if ($justAlias)
+		{
+			return $this->table_alias() ? $this->table_alias() : $this->table_name();
+		}
+		return $this->table_name() . ($this->table_alias() ? ' ' . $this->table_alias() : '');
 	}
 	
 	function base_filter($base_filter = null)
@@ -149,7 +169,7 @@ class Model {
 		{
 			//return object for ID
 			$id = $options;
-			$results = $db->where($this->primary_key(), $id)->limit(1)->get($this->table_name());
+			$results = $db->where($this->get(true) . '.' . $this->primary_key(), $id)->limit(1)->get($this->get());
 			if ($results->num_rows)
 			{
 				$results = $this->process_results($results);
@@ -193,7 +213,7 @@ class Model {
 				$db->select($select);
 			}
 			
-			$results = $this->process_results($db->get($this->table_name()));
+			$results = $this->process_results($db->get($this->get()));
 			
 			if ($include = value_for_key('include', $options))
 			{
@@ -263,7 +283,7 @@ class Model {
 	
 	public function count($options = array())
 	{
-		$options['select'] = 'COUNT(' . $this->primary_key() . ') AS count';
+		$options['select'] = 'COUNT(' . $this->get(true) . '.' . $this->primary_key() . ') AS count';
 		$results = $this->find($options);
 		$row = $results[0];
 		$count = $row->count;
