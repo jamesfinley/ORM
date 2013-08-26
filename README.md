@@ -94,3 +94,59 @@ foreach ($articles as $article)
 	<?
 }
 ```
+
+# DB
+
+The ORM outlined above is built on the back of a powerful, lightweight DB class that acts as a distributed query builder.
+
+## Get
+
+```php
+$db = DB::Instance();
+$db->get('blog'); /* Builds: SELECT * FROM blogs */
+```
+
+## Select
+
+```php
+$db = DB::Instance();
+$db->select('name')->get('blog'); /* Builds: SELECT name FROM blogs */
+```
+
+## Join
+
+```php
+$db = DB::Instance();
+$db->join('blog', 'article.blog_id = blog.blog_id')->get('article'); /* Builds: SELECT * FROM article JOIN blog ON article.blog_id = blog.blog_id */
+
+// LEFT JOIN
+$db->join('blog', 'article.blog_id = blog.blog_id', 'left')->get('article'); /* Builds: SELECT * FROM article LEFT JOIN blog ON article.blog_id = blog.blog_id */
+```
+
+## Where
+
+```php
+$db = DB::Instance();
+$db->where('name', 'News')->get('blog'); /* Builds: SELECT * FROM blogs WHERE name = "News" */
+$db->where('name LIKE "% News"')->get('blog'); /* Builds: SELECT * FROM blogs WHERE name LIKE "% News" */
+$db->where(array(
+	'name' => 'News'
+))->get('blog'); /* Builds: SELECT * FROM blogs WHERE name = "News" */
+```
+
+## Order
+
+```php
+$db = DB::Instance();
+$db->order('updated', 'DESC')->get('blog'); /* Builds: SELECT * FROM blogs ORDER BY updated DESC */
+```
+
+## Limit
+
+```php
+$db = DB::Instance();
+$db->limit(1)->get('article'); /* Builds: SELECT * FROM article LIMIT 1 */
+
+// Offset by 10
+$db->limit(10, 10)->get('article'); /* Builds: SELECT * FROM article LIMIT 10, 10 */
+```
