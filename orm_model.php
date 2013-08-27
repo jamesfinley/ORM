@@ -166,8 +166,8 @@ class Model {
 	public function create($data)
 	{
 		//call before_create and before_save
-		$data = $this->run_hook('before_create', $this);
-		$data = $this->run_hook('before_save', $this);
+		//$data = $this->run_hook('before_create', $data);
+		//$data = $this->run_hook('before_save', $data);
 		
 		$clean_data = array();
 		
@@ -194,8 +194,8 @@ class Model {
 		$obj = $this->find($id);
 		
 		//call after_create and after_save
-		$obj = $this->run_hook('after_create', $obj);
-		$obj = $this->run_hook('after_save', $obj);
+		//$obj = $this->run_hook('after_create', $obj);
+		//$obj = $this->run_hook('after_save', $obj);
 		
 		return $obj;
 	}

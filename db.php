@@ -251,7 +251,7 @@ class DB {
 		foreach ($data as $key => $value)
 		{
 			$keys[] = $key;
-			$values[] = '"' . $this->db->real_escape_string($value) . '"';
+			$values[] = strpos($value, '(') === false ? '"' . $this->db->real_escape_string($value) . '"' : $value;
 		}
 		
 		$query = 'INSERT INTO ' . $table_name . '(' . implode(',', $keys) . ') VALUES (' . implode(',', $values) . ')';
