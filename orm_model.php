@@ -165,6 +165,10 @@ class Model {
 	/*! CRUD Functions */
 	public function create($data)
 	{
+		//call before_create and before_save
+		$data = $this->run_hook('before_create', $this);
+		$data = $this->run_hook('before_save', $this);
+		
 		$clean_data = array();
 		
 		foreach ($data as $key => $value)
@@ -187,7 +191,13 @@ class Model {
 		$db->create($this->table_name(), $data);
 		$id = $db->db->insert_id;
 		
-		return $this->find($id);
+		$obj = $this->find($id);
+		
+		//call after_create and after_save
+		$obj = $this->run_hook('after_create', $obj);
+		$obj = $this->run_hook('after_save', $obj);
+		
+		return $obj;
 	}
 	public function update($id, $data)
 	{
