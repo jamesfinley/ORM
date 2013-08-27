@@ -244,6 +244,21 @@ class DB {
 		return $this->query($query);
 	}
 	
+	public function create($table_name, $data)
+	{
+		$keys = array();
+		$values = array();
+		foreach ($data as $key => $value)
+		{
+			$keys[] = $key;
+			$values[] = '"' . $this->db->real_escape_string($value) . '"';
+		}
+		
+		$query = 'INSERT INTO ' . $table_name . '(' . implode(',', $keys) . ') VALUES (' . implode(',', $values) . ')';
+		
+		return $this->query($query);
+	}
+	
 	public function update($table_name, $data, $where = null)
 	{
 		if ($where !== null)

@@ -2,7 +2,7 @@
 
 class ModelRow {
 	
-	private $model;
+	public $model;
 	private $data;
 	
 	function __construct($model, $data)

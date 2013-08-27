@@ -165,7 +165,29 @@ class Model {
 	/*! CRUD Functions */
 	public function create($data)
 	{
+		$clean_data = array();
 		
+		foreach ($data as $key => $value)
+		{
+			if (get_class($value) == 'ModelRow')
+			{
+				$primary_key = $value->model->primary_key();
+				$id = $value->$primary_key;
+				
+				$clean_data[$primary_key] = $id;
+			}
+			else
+			{
+				$clean_data[$key] = $value;
+			}
+		}
+		$data = $clean_data;
+		
+		$db = DB::Instance();
+		$db->create($this->table_name(), $data);
+		$id = $db->db->insert_id;
+		
+		return $this->find($id);
 	}
 	public function update($id, $data)
 	{
