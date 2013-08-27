@@ -9,6 +9,7 @@ class Model {
 	private $hooks;
 	
 	private $base_filter;
+	private $base_filter_joins;
 	
 	function __construct()
 	{
@@ -65,6 +66,22 @@ class Model {
 			$this->base_filter = $base_filter ? $base_filter : array();
 		}
 		return $this->base_filter;
+	}
+	
+	function base_filter_joins($table = null, $on = null)
+	{
+		if (empty($this->base_filter_joins))
+		{
+			$this->base_filter_joins = array();
+		}
+		if ($table && $on)
+		{
+			$this->base_filter_joins[] = array(
+				'table' => $table,
+				'on' => $on
+			);
+		}
+		return $this->base_filter_joins;
 	}
 	
 	/*! Associations */
@@ -180,6 +197,13 @@ class Model {
 		else
 		{
 			$db->where($this->base_filter());
+			if (count($this->base_filter_joins()))
+			{
+				foreach ($this->base_filter_joins() as $join)
+				{
+					$db->join($join['table'], $join['on']);
+				}
+			}
 			
 			if ($where = value_for_key('where', $options))
 			{

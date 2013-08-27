@@ -77,9 +77,24 @@ class ModelRow {
 				$class_name = Inflector::singularize($association['name']);
 				$class = new $class_name;
 				//TODO: duplicate class
-				$primary_key = $this->model->primary_key();
-				$id = $this->$primary_key;
-				$class->base_filter(array($primary_key => $id));
+				
+				if ($association['options'] !== null && $association['options']['through'])
+				{
+					$primary_key = $this->model->primary_key();
+					$foreign_key = $class->primary_key();
+					$table = $association['options']['through'];
+					$on = $table . '.' . $foreign_key . ' = ' . $class->get(true) . '.' . $foreign_key;
+					$class->base_filter_joins($table, $on);
+					
+					$id = $this->$primary_key;
+					$class->base_filter(array($table . '.' . $primary_key => $id));
+				}
+				else
+				{
+					$primary_key = $this->model->primary_key();
+					$id = $this->$primary_key;
+					$class->base_filter(array($primary_key => $id));
+				}
 				
 				return $class;
 			}
