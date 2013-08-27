@@ -14,10 +14,11 @@ The **primary key** of a table should be the table name followed by *_id*. A tab
 
 ## Associations
 
-The power of ORM is in associations between models. Currently only the following associations are supported:
+The power of ORM is in associations between models. Currently the following associations are supported:
 
 - belongs to
 - has many
+- has many through
 
 When setting associations up, the association name is the model name, not the table name. For **has many** associations, the model name is pluralized.
 
@@ -33,6 +34,62 @@ ORM provides a series of hooks to process data before and after events. Currentl
 - after destroy
 
 ## Example
+
+### Database Design
+
+```mysql
+CREATE TABLE `article` (
+  `article_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `blog_id` int(11) DEFAULT NULL,
+  `author_id` int(11) DEFAULT NULL,
+  `title` varchar(120) DEFAULT NULL,
+  `article` text,
+  `snippet` varchar(200) DEFAULT NULL,
+  `created` int(11) DEFAULT NULL,
+  `updated` int(11) DEFAULT NULL,
+  PRIMARY KEY (`article_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `article_category` (
+  `category_id` int(11) DEFAULT NULL,
+  `article_id` int(11) DEFAULT NULL,
+  `created` int(11) DEFAULT NULL,
+  `updated` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `author` (
+  `author_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(120) DEFAULT NULL,
+  `created` int(11) DEFAULT NULL,
+  `updated` int(11) DEFAULT NULL,
+  PRIMARY KEY (`author_id`)
+
+CREATE TABLE `blog` (
+  `blog_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(60) NOT NULL DEFAULT '',
+  `created` int(11) DEFAULT NULL,
+  `updated` int(11) DEFAULT NULL,
+  PRIMARY KEY (`blog_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `category` (
+  `category_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(40) DEFAULT NULL,
+  `created` int(11) DEFAULT NULL,
+  `updated` int(11) DEFAULT NULL,
+  PRIMARY KEY (`category_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `comment` (
+  `comment_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `article_id` int(11) DEFAULT NULL,
+  `author` varchar(120) DEFAULT NULL,
+  `comment` text,
+  `created` int(11) DEFAULT NULL,
+  `updated` int(11) DEFAULT NULL,
+  PRIMARY KEY (`comment_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+```
 
 ### Setup Models and Connect to Database
 
@@ -57,6 +114,9 @@ class Article extends Model {
 		$this->belongs_to('blog');
 		$this->belongs_to('author');
 		$this->has_many('comments');
+		$this->has_many('categories', array(
+			'through' => 'article_category' //use linking table
+		));
 	}
 	
 }
@@ -70,7 +130,19 @@ class Author extends Model {
 	
 }
 
+class Category extends Model {
+	
+	function init()
+	{
+		$this->has_many('articles', array(
+			'through' => 'article_category' //use linking table
+		));
+	}
+	
+}
+
 class Comment extends Model { }
+
 ```
 
 ### Access Data
@@ -92,8 +164,19 @@ foreach ($articles as $article)
 	?>
 	<article>
 		<h1><?=$article->title?></h1>
-		<h2><?=date('F d, Y', $article->created_at)?> by <?=$article->author->name?> | <?=$article->comments->count()?> comments</h2>
+		<h2><?=date('F d, Y', $article->created)?> by <?=$article->author->name?> | <?=$article->comments->count()?> comments</h2>
 		<?=$article->snippet?>
+		<footer>
+			Categories:
+			<ul>
+				<?php
+					foreach ($article->categories->find() as $category)
+					{
+						echo "<li>{$category->name}</li>";
+					}	
+				?>
+			</ul>
+		</footer>
 	</article>
 	<?
 }
