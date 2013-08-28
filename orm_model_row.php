@@ -70,7 +70,7 @@ class ModelRow {
 				$primary_key = $class->primary_key();
 				$id = $this->data->$primary_key;
 				
-				return $class->find($id);
+				return $id ? $class->find($id) : null;
 			}
 			elseif ($association['type'] == 'has_many')
 			{
