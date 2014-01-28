@@ -24,7 +24,12 @@ class ModelRow {
 	
 	function touch()
 	{
-		$this->update();
+		$this->update(array('updated' => 'NOW()'));
+	}
+	
+	function data()
+	{
+		return $this->data;
 	}
 	
 	function destroy()
@@ -65,25 +70,33 @@ class ModelRow {
 		{
 			if ($association['type'] == 'belongs_to')
 			{
-				$class_name = ucfirst($association['name']);
+				$class_name = !empty($association['options']['class_name']) ? ucfirst($association['options']['class_name']) : ucfirst($association['name']);
 				$class = new $class_name;
-				$primary_key = $class->primary_key();
+				if (!empty($association['options']['foreign_key']))
+				{
+					$primary_key = $association['options']['foreign_key'];
+				}
+				else
+				{
+					$primary_key = $class->primary_key();
+				}
 				$id = $this->data->$primary_key;
 				
 				return $id ? $class->find($id) : null;
 			}
 			elseif ($association['type'] == 'has_many')
 			{
-				$class_name = Inflector::singularize($association['name']);
+				$class_name = !empty($association['options']['class_name']) ? $association['options']['class_name'] : Inflector::singularize($association['name']);
 				$class = new $class_name;
 				//TODO: duplicate class
 				
 				if ($association['options'] !== null && $association['options']['through'])
 				{
 					$primary_key = $this->model->primary_key();
-					$foreign_key = $class->primary_key();
+					$foreign_key1 = !empty($association['options']['foreign_key']) ? $association['options']['foreign_key'] : $class->primary_key();
+					$foreign_key2 = $class->primary_key();
 					$table = $association['options']['through'];
-					$on = $table . '.' . $foreign_key . ' = ' . $class->get(true) . '.' . $foreign_key;
+					$on = $table . '.' . $foreign_key1 . ' = ' . $class->get(true) . '.' . $foreign_key2;
 					$class->base_filter_joins($table, $on);
 					
 					$id = $this->$primary_key;

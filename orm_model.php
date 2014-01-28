@@ -138,20 +138,26 @@ class Model {
 	}
 	function run_hook($hook, $row = null, $data = null)
 	{
-		foreach ($this->hooks[$hook] as $hook)
+		if (!empty($this->hooks[$hook]))
 		{
-			$data = $this->$hook($row, $data);
+			foreach ($this->hooks[$hook] as $h)
+			{
+				$data = $this->$h($row, $data);
+			}
 		}
-		return $data;
+		return in_array($hook, array('after_save', 'after_create', 'after_update')) ? $row : $data;
 	}
 	
 	/*! Process Methods */
 	private function process_results($results)
 	{
 		$processed = array();
-		while($row = $results->fetch_object())
+		if ($results->num_rows)
 		{
-			$processed[] = $this->process_result($row);
+			while($row = $results->fetch_object())
+			{
+				$processed[] = $this->process_result($row);
+			}
 		}
 		
 		return $processed;
@@ -167,7 +173,7 @@ class Model {
 	{
 		//call before_create and before_save
 		//$data = $this->run_hook('before_create', $data);
-		//$data = $this->run_hook('before_save', $data);
+		$data = $this->run_hook('before_save', null, $data);
 		
 		$clean_data = array();
 		
@@ -195,7 +201,7 @@ class Model {
 		
 		//call after_create and after_save
 		//$obj = $this->run_hook('after_create', $obj);
-		//$obj = $this->run_hook('after_save', $obj);
+		$obj = $this->run_hook('after_save', $obj, $data);
 		
 		return $obj;
 	}
@@ -266,6 +272,7 @@ class Model {
 			}
 			if ($select = value_for_key('select', $options))
 			{
+				echo $select;
 				$db->select($select);
 			}
 			
@@ -279,20 +286,31 @@ class Model {
 					{
 						if ($association['type'] == 'belongs_to')
 						{
-							$class_name = ucfirst($association['name']);
+							$class_name = !empty($association['options']['class_name']) ? ucfirst($association['options']['class_name']) : ucfirst($association['name']);
 							$class = new $class_name;
+							if (!empty($association['options']['foreign_key']))
+							{
+								$foreign_key = $association['options']['foreign_key'];
+							}
+							else
+							{
+								$foreign_key = $association['name'] . '_id';
+							}
 							$primary_key = $class->primary_key();
 							
 							$ids = array();
-							foreach ($results as $row) $ids[] = $row->$primary_key;
-							$include_results = $class->process_results($db->where('( ' . $primary_key . ' IN (' . implode(',', $ids) . ') )')->get($class->table_name()));
-							foreach ($include_results as $include_row)
+							foreach ($results as $row) if ($row->$foreign_key) $ids[] = $row->$foreign_key;
+							if (count($ids))
 							{
-								foreach ($results as $row)
+								$include_results = $class->process_results($db->where('( ' . $primary_key . ' IN (' . implode(',', $ids) . ') )')->get($class->table_name()));
+								foreach ($include_results as $include_row)
 								{
-									if ($row->$primary_key == $include_row->$primary_key)
+									foreach ($results as $row)
 									{
-										$row->add_data($association['name'], $include_row);
+										if ($row->$foreign_key == $include_row->$primary_key)
+										{
+											$row->add_data($association['name'], $include_row);
+										}
 									}
 								}
 							}
@@ -309,7 +327,7 @@ class Model {
 	{
 		$options = array_merge(array(
 			'limit' => 1,
-			'order' => $this->created_at_key() . ' ASC'
+			'order' => $this->primary_key().' ASC'
 		), $options);
 		
 		$results = $this->find($options);
@@ -325,7 +343,7 @@ class Model {
 	{
 		$options = array_merge(array(
 			'limit' => 1,
-			'order' => $this->created_at_key() . ' DESC'
+			'order' => $this->primary_key() . ' DESC'
 		), $options);
 		
 		$results = $this->find($options);
